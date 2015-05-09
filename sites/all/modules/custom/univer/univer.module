@@ -1,0 +1,73 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function univer_menu() {
+  $items['add-manual'] = array(
+    'title'           => 'Manual add',
+    'page callback'   => 'drupal_get_form',
+    'page arguments'  => array('univer_manual_add_form'),
+    'access callback' => TRUE,
+    'file'            => 'includes/univer.pages.inc',
+  );
+  $items['node/%node/section/%'] = array(
+    'page callback'  => 'univer_manual_section_callback',
+    'page arguments'  => array(1, 3),
+    'access callback' => TRUE,
+    'file'            => 'includes/univer.pages.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements univer_menu().
+ */
+function univer_permission() {
+  return array(
+    'pdf preview' => array(
+      'title' => t('Pdf preview'),
+      'description' => t('Ability to view pdf file unpublished nodes.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function univer_field_formatter_info() {
+  return array(
+    'univer_section_formatter' => array(
+      'label' => t('Univer section formatter'),
+      'field types' => array('field_collection'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function univer_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+
+  switch ($display['type']) {
+    case 'univer_section_formatter':
+     $cids = array();
+      foreach ($items as $item) {
+        $cids[] = $item['value'];
+      }
+      $field_collections = field_collection_item_load_multiple($cids);
+      $links = array();
+      foreach (array_values($field_collections) as $section => $field_collection) {
+        $section++;
+        $title = field_get_items('field_collection_item', $field_collection, 'field_title');
+        if (!empty($title)) {
+          $title = reset($title);
+          $element[$section]['#markup'] = l($title['value'], "node/{$entity->nid}/section/{$section}");
+        }
+      }
+      break;
+  }
+  return $element;
+}
