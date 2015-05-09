@@ -1,0 +1,7 @@
+'database' => 'univer',
+'username' => 'root',
+'password' => 'qazwsx',
+'host' => 'localhost',
+'port' => '',
+'driver' => 'mysql',
+'prefix' => '',
