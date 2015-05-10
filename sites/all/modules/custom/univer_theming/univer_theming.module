@@ -1,0 +1,85 @@
+<?php
+/**
+ * Helper module file which provides functionality required for theming.
+ */
+
+/**
+ * Implements hook_block_info().
+ */
+function univer_theming_block_info() {
+  $blocks['univer_header'] = array(
+    'info' => t('Univer Header'),
+    'cache' => DRUPAL_NO_CACHE
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function univer_theming_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'univer_header':
+      $header = array(
+        '#type' => 'container',
+        '#attributes' => array('class' => array('header-wrapper')),
+        'top-bar' => array(
+          '#theme' => 'html_tag',
+          '#tag' => 'div',
+          '#value' => '',
+          '#attributes' => array('class' => array('top-bar'))
+        ),
+        'name-bar' => array(
+          '#theme' => 'html_tag',
+          '#tag' => 'div',
+          '#value' => 'Комп’ютерно-інтегровані технології: освіта,наука,виробництво',
+          '#attributes' => array('class' => array('name-bar'))
+        ),
+        'slogan-bar' => array(
+          '#theme' => 'html_tag',
+          '#tag' => 'div',
+          '#value' => 'Фаховий науковий журнал Луцького НТУ',
+          '#attributes' => array('class' => array('slogan-bar'))
+        ),
+      );
+
+      /** Top menu creation. **/
+      $header['menu'] = array(
+        '#theme' => 'item_list',
+        '#items' => array(
+          'home' => array(
+            'data' => l('Головна', '<front>'),
+            'class' => array('homepage')
+          ),
+          'archive' => array(
+            'data' => 'Архів випусків',
+            'class' => array('years'),
+            'children' => array(),
+          ),
+          'about' => array(
+            'data' => l('Про нас', 'about'),
+            'class' => array('about')
+          ),
+        ),
+        '#attributes' => array('class' => array('top-menu')),
+      );
+
+      $vocabulary = taxonomy_vocabulary_machine_name_load('years');
+      $tree = taxonomy_get_tree($vocabulary->vid, 0, 1, FALSE);
+      foreach ($tree as $term) {
+        $header['menu']['#items']['archive']['children'][] = array(
+          'data' => l($term->name, "articles-by-year/{$term->name}"),
+          'class' => array('year'),
+        );
+      }
+
+      $block['subject'] = '';
+      $block['content'] = render($header);
+      break;
+
+  }
+  return $block;
+}
